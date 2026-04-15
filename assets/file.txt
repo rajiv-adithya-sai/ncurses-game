@@ -1,0 +1,538 @@
+#include<ncurses.h>
+#include<unistd.h>
+
+void init_display(){
+	initscr();
+	noecho();
+	cbreak();
+	keypad(stdscr , TRUE);
+	nodelay(stdscr , TRUE);
+
+}
+
+void end_display(){
+	endwin();
+}
+
+int get_input(){
+	return getch();
+}
+
+void refresh_screen(){
+	refresh();
+}
+
+void clear_screen(){
+	clear();
+}
+
+void delay(int ms){
+	usleep(ms*1000);
+}
+#include<stdio.h>
+#include<time.h>
+#include<stdlib.h>
+#include<string.h>
+#include<ncurses.h>
+
+#include "score_panel.h"
+#include "mechanics.h"
+#include "display.h"
+#include "savedata.h"
+
+int main(){
+	char name[MAX_NAME];
+	srand(time(0));
+	printf("Your Tag(:");
+	scanf("%s" , name);
+	
+	init_display();
+
+	//show_title();
+	get_data();
+	init_score(name);
+	init_frame();
+	
+	while(1){
+		clear_screen();
+		int wave = get_wave();
+		push_down();
+
+		if((wave%3) ==0) generate_bullet();
+		else generate_blank();
+		update_wave();
+
+		draw();
+		display_score();
+
+		if(check_collision()){
+			int score = get_score();
+			update_data(name,score,wave);
+			put_data();
+			break;
+		}
+
+		int ch;
+
+		while((ch = getch())!= ERR){
+			if (ch == KEY_LEFT || ch == 'a') player_posn('a');
+			else if(ch == KEY_RIGHT || ch == 'd') player_posn('d');
+			else if (ch == KEY_DOWN) delay(300);
+			else if (ch == 'e') break;
+		}
+		
+		check_near_miss();
+
+		refresh_screen();
+		if(wave <50) delay(600);
+		else if(wave >=50 && wave< 100) delay(400);
+		else if(wave>100 && wave <120) delay(350);
+		else delay(300);
+	}
+	
+	end_display();
+	
+	output_score();
+	leaderboard();
+
+	system("make clean");
+}
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+#include<ncurses.h>
+
+#define Rows 30
+#define Cols 45
+
+char bullet = '#';
+char frame[Rows+2][Cols+2];
+
+int player_col = (Cols/2);
+int near_miss = 0;
+
+void init_frame(){
+    init_pair(1, COLOR_RED , COLOR_BLACK);
+    init_pair(2,COLOR_YELLOW , COLOR_BLACK);
+
+    for(int i=0;i<Rows+2;i++){ 
+        frame[i][0] = '|';
+        frame[i][Cols+1]= '|';
+    }
+
+    for(int i=0;i<Cols+2;i++){
+        frame[0][i] = '-';
+        frame[Rows+1][i] = '-';
+    }
+
+    for(int i=0;i<Rows;i++){
+        for(int j=0;j<Cols;j++){
+            frame[i+1][j+1] = ' ';
+        }
+    }
+}
+/*int random_no(){
+    return rand()%(1 << Cols);
+}*/
+
+unsigned long long generate_k_bits(int n, int k) {
+    if (k == 0) return 0;
+    if (k == n) return (1 << n) - 1;
+
+    if (rand() % n < k)
+        return (1 << (n - 1)) | generate_k_bits(n - 1, k - 1);
+    else
+        return generate_k_bits(n - 1, k);
+}
+
+unsigned long long random_no() {
+	int bullets = rand()%((Cols)/2);
+	return generate_k_bits(Cols , bullets+(Cols/4));
+}
+
+void generate_bullet(){
+    unsigned long long barrage = random_no();
+
+    for(int i=0;i<Cols;i+=1){
+        if(barrage & 1){
+		frame[1][i+1] = bullet ;
+	}
+        barrage >>= 1;
+    }
+}
+
+void generate_blank(){
+	for(int i=0;i<Cols;i++){
+		frame[1][i+1] = ' ';
+	}
+}
+
+void push_down(){
+    for(int i=Rows-1;i>0;i--){
+        for(int j=1;j<=Cols;j++){
+            frame[i+1][j] = frame[i][j];
+        }
+    }
+
+    for(int j=1;j<=Cols;j++){
+        frame[1][j] = ' ';
+    }
+}
+
+void player_posn(char c){
+	if(c=='d') player_col = (player_col+1)%Cols;
+	if (c== 'a') player_col = (player_col-1+Cols)%Cols;
+	else return;
+}
+
+int get_player_col(){
+	return player_col;
+}
+
+int check_collision(){
+    return (frame[Rows][player_col-1] == bullet /*|| frame[Rows][player_col+1] == '_'*/);
+}
+
+void check_near_miss(){
+	if(player_col +1 <Cols && frame[Rows-2][player_col] == bullet) near_miss++;
+       	if(player_col - 1 >= 0 && frame[Rows-2][player_col-2] == bullet) near_miss++;
+}
+
+int get_near(){
+	return near_miss;
+}
+
+int get_Rows(){
+	return Rows;
+}
+
+void draw() {
+    static int time = 0;
+
+    for (int i = 0; i < Rows + 2; i++) {
+        for (int j = 0; j < Cols + 2; j++) {
+            if (i == Rows && j == player_col - 1) {
+                if (time % 4 == 0)
+                    attron(COLOR_PAIR(2)); 
+                else
+                    attron(COLOR_PAIR(1)); 
+
+                mvaddch(i + 4, j, ACS_CKBOARD); 
+
+                attroff(COLOR_PAIR(1));
+                attroff(COLOR_PAIR(2));
+            }
+            else if(frame[i][j] == bullet){
+                mvaddch(i + 4, j, ACS_DARROW);
+            }
+	    else {
+	    	mvaddch(i+4 , j , frame[i][j]);
+	    }
+        }
+    }
+    time++; 
+}
+
+/*void draw(){
+    for(int i=0;i<Rows+2;i++){
+        for(int j=0;j<Cols+2;j++){
+            if(i==Rows && j==player_col+1)
+                printf("P");
+            else
+                printf("%c", frame[i][j]);
+        }
+        printf("\n");
+    }
+}*/
+#include<stdio.h>
+#include<ncurses.h>
+
+char index[50][50] = {" "};
+void show_title(){
+	FILE* fin = fopen(title.txt , "r");
+	char temp[100];
+	int count = 4;
+	while(fscanf(fin , "%[\n]\n" ,temp)){
+		temp[strcspn(str , "\n")] = '\0';
+		sprintf(temp , "%s" , index[count]);
+		count++;
+	}
+}
+
+void option_select(){
+	char point = '►';
+}
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#define MAX_NAME 20
+struct save{
+    	char name[MAX_NAME];
+    	int score;
+    	int max_wave;
+    	struct save* next;
+};
+
+struct save* head = NULL;
+
+void get_data(){
+    FILE* fin = fopen("data.csv", "r");
+    if(!fin) return;
+
+    char temp[100];
+
+    	while(fscanf(fin , "%[^\n]\n" , temp) != EOF){
+		struct save* newsafe = malloc(sizeof(struct save));
+
+        	char *tok = strtok(temp , ",");
+        	strcpy(newsafe->name , tok);
+		if(!tok) continue ;
+        	tok = strtok(NULL , ",");
+        	newsafe->score = atoi(tok);
+		if(!tok) continue ;
+        	tok = strtok(NULL , ",");
+        	newsafe->max_wave = atoi(tok);
+
+        	newsafe->next = NULL;
+
+         	if(head == NULL){
+            		head = newsafe;
+        	}
+	        else {
+            		struct save* curr = head;
+            		while(curr->next){
+                		curr = curr->next;
+            		}
+            		curr->next = newsafe;
+        	}
+    	}
+    	fclose(fin);
+}
+
+
+void update_data(char name[] , int score , int max_wave){
+	if(head == NULL){
+		struct save* newsafe = (struct save*)malloc(sizeof(struct save));
+		newsafe->score = score;
+		strcpy(newsafe->name , name);
+		newsafe->max_wave = max_wave;
+		head = newsafe;
+		newsafe->next = NULL;
+		return;
+	}
+	struct save* curr = head;
+	
+	while(curr->next && strcmp(curr->name , name)){
+		curr = curr->next;
+	}
+	if(curr->next == NULL && strcmp(curr->name , name)!=0){
+		struct save* newsafe = (struct save*)malloc(sizeof(struct save));
+		newsafe->score = score;
+		newsafe->max_wave = max_wave;
+		strcpy(newsafe->name , name);
+		curr->next = newsafe;
+		newsafe->next = NULL;
+		return ;
+	}
+
+	if(curr->score <= score){
+		if(curr->score == score && max_wave >=curr->max_wave){
+			curr->max_wave = max_wave;
+		}
+		curr->score = score;
+	}
+}
+         
+
+void put_data(){
+    	FILE *fput = fopen("data.csv" , "w");
+    	if(!fput) return;
+
+    	struct save* curr = head;
+
+    	while(curr){
+        	fprintf(fput , "%s,%d,%d\n", curr->name , curr->score , curr->max_wave);
+        	curr = curr->next;
+    	}
+
+    	fclose(fput);
+}
+
+void sort_data(){
+	if(head == NULL) return;
+
+	struct save* curr = head;
+	while(curr){
+		int swap = 0;
+		struct save* temp = curr->next;
+		while(temp && !swap){
+			if(temp->score > curr->score){
+				char name[MAX_NAME];
+				int score;
+				int wave;
+
+				strcpy(name , temp->name);
+				strcpy(temp->name , curr->name);
+				strcpy(curr->name , name);
+
+				score = temp->score;
+				temp->score = curr->score;
+				curr->score = score;
+
+				wave = temp->max_wave;
+				temp->max_wave = curr->max_wave;
+				curr->max_wave = wave;
+				swap = 1;
+			}
+			else temp = temp->next;
+		}
+		if(swap) curr = head;
+		else curr = curr->next;
+	}
+}
+
+void leaderboard(){
+	char name[MAX_NAME];
+        sort_data();
+        struct save* temp = head;
+        int rank = 1;
+
+        while(temp){
+		strcpy(name, temp->name);
+		for(int i = strlen(name);i<MAX_NAME;i++){
+			name[i] = ' ';
+		}
+		name[MAX_NAME - 1] = '\0';
+                printf("%d. %s%d %d\n",rank , name , temp->score , temp->max_wave);
+                rank++;
+                temp = temp->next;
+        }
+}
+#include <stdio.h>
+#include <string.h>
+#include "mechanics.h"
+#include<ncurses.h>
+
+#define MAX_NAME 7   // 6 chars + '\0'
+
+static char player_name[MAX_NAME];
+static int wave = 0;
+
+int get_wave_crossed(int wave, int Rows) {
+    return (wave < Rows) ? 0 : (wave - Rows);
+}
+
+void init_score(char name[]) {
+	strncpy(player_name, name, 6);
+	player_name[6] = '\0';
+}
+
+void update_wave() {
+    wave++;
+}
+
+int get_wave(){return wave;}
+
+/*void check_near_miss(char frame_row[], int cols) {
+    int player_col = get_player_col();
+    if (player_col - 1 >= 0 && frame_row[player_col] == '#')
+        near_miss++;
+
+    if (player_col + 1 < cols && frame_row[player_col + 2] == '#')
+        near_miss++;
+}*/
+
+
+int get_score() {
+	int rows = get_Rows();
+	int wave_crossed = get_wave_crossed(wave , rows);
+	int near_miss = get_near();
+    	return (wave_crossed+2)/3 * 100 + near_miss * 75;
+}
+
+void display_score() {
+    int rows = get_Rows();
+    int near_miss = get_near();
+    int wave_crossed = get_wave_crossed(get_wave(), rows);
+
+    int start_col = 2;   // left margin
+    int width = 50;
+
+    // Top border
+    for (int i = 0; i < width; i++) {
+        mvaddch(0, start_col + i, '-');
+    }
+
+    // Score text
+    mvprintw(1, start_col,
+        "Player: %s | Wave: %d | Score: %d",
+        player_name, wave_crossed, get_score()
+    );
+
+    mvprintw(2, start_col, "Near Miss: %d", near_miss);
+
+    // Bottom border
+    for (int i = 0; i < width; i++) {
+        mvaddch(3, start_col + i, '-');
+    }
+
+ }
+void output_score(){
+	int rows = get_Rows();
+	int near_miss = get_near();
+	int final_wave = get_wave_crossed(get_wave() , rows);
+
+	for(int i=0;i<50;i++){printf("-");}
+	printf("\n");
+	printf("Player : %s | Wave : %d | Final Score %d\n" , player_name , final_wave , get_score());
+	for(int i=0;i<50;i++){printf("-");}
+	printf("\n");
+}
+#ifndef DISPLAY_H
+#define DISPLAY_H
+
+void init_display();
+void end_display();
+int get_input();
+void clear_screen();
+void refresh_screen();
+void delay(int ms);
+
+#endif
+#ifndef GAME_H
+#define GAME_H
+
+void init_frame();
+int random_no();
+void generate_bullet();
+void generate_blank();
+void push_down();
+void player_posn(char c);
+int check_collision();
+void draw();
+int get_player_col();
+void check_near_miss();
+int get_near();
+int get_Rows();
+
+#endif
+#ifndef SAVEFILE_H
+#define SAVEFILE_H
+
+#define MAX_NAME 25 
+void get_data();
+void update_data(char name[] , int score , int max_wave);
+void put_data();
+void sort_data();
+void leaderboard();
+
+#endif
+#ifndef GAME_H
+
+void init_score();
+void update_wave();
+int get_wave();
+int get_score();
+void display_score();
+void output_score();
+#endif
