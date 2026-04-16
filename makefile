@@ -3,7 +3,7 @@ all: game
 run: game
 	./game
 
-game: mechanics.o main.o score_panel.o display.o savedata.o
+game: mechanics.o main.o score_panel.o display.o savedata.o opening.o
 	gcc *.o -lncurses -o game
 
 mechanics.o: source/mechanics.c dir/mechanics.h
