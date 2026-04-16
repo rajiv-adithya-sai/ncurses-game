@@ -2,8 +2,8 @@
 #include <ncurses.h>
 #include<string.h>
 //#include<locale.h>
-#define dim 40
-#define init_posn 8
+#define dim 100
+#define init_posn 7
 
 char title[dim][dim];
 int point_row = init_posn;
@@ -13,7 +13,7 @@ void init_title(){
 			title[i][j] = ' ';
 		}
 	}
-	FILE* fin = fopen("../assets/title.txt" , "r");
+	FILE* fin = fopen("assets/title.txt" , "r");
 	char temp[100];
 	int row = 0;
 	while(fgets(temp , sizeof(temp) , fin)){
@@ -32,7 +32,7 @@ int option_select(){
 		point_row ++;
 		return 0;
 	}
-	else if ((ch == KEY_UP || ch == 'w')&& point_row > 8) {
+	else if ((ch == KEY_UP || ch == 'w')&& point_row > 7) {
 		point_row--;
 		return 0;
 	}

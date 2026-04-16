@@ -12,35 +12,38 @@
 
 int main(){
 	int stop = 0;
+	int lb = 0;
+
 	char name[MAX_NAME];
 	srand(time(0));
-	printf("Your Tag(:");
+	printf("Your Tag :");
 	scanf("%s" , name);
 	
 	init_display();
 	get_data();
-	//init_title();
-	/*while(1){
+	init_title();
+	while(1){
 		int x = option_select();
 		draw_title();
-		if(x == 8){
+		if(x == 7){
+			break;
+		}
+		else if(x == 8){
+			stop = 1;
+			lb = 1;
 			break;
 		}
 		else if(x == 9){
-			system("clear");
-			leaderboard();
-			break;
-		}
-		else if(x == 10){
 			stop = 1;
 			break;	
 		}
 		napms(300);
-	}*/
-	//show_title();
+	}
+
 	init_score(name);
 	init_frame();
-	int speed = 500;
+
+	int speed = 250;
 	while(stop == 0){
 		clear_screen();
 		int wave = get_wave();
@@ -73,15 +76,18 @@ int main(){
 		check_near_miss();
 
 		refresh_screen();
-		if(wave <50) speed = 500;
-		else if(wave >=50 && wave< 100) speed = 400;
-		else if(wave>100 && wave <120) speed = 350;
-		else speed = 300;
+		if(wave <50) speed = 250;
+		else if(wave >=50 && wave< 100) speed = 200;
+		else if(wave>100 && wave <120) speed = 170;
+		else speed = 150;
 	}
 	
 	end_display();
 	
-	output_score();
-
+	if(stop == 0) output_score();
+	if(lb == 1){
+		system("clear");
+		leaderboard();
+	}
 	system("make clean");
 }

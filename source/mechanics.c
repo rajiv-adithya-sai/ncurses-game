@@ -5,7 +5,7 @@
 #include<locale.h>
 
 #define Rows 30
-#define Cols 45
+#define Cols 50
 
 char bullet = '#';
 char frame[Rows+2][Cols+2];
