@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<time.h>
 #include<ncurses.h>
+#include<locale.h>
 
 #define Rows 30
 #define Cols 45
@@ -31,6 +32,7 @@ void init_frame(){
             frame[i+1][j+1] = ' ';
         }
     }
+    setlocale(LC_ALL ,"");
 }
 /*int random_no(){
     return rand()%(1 << Cols);
@@ -118,7 +120,7 @@ void draw() {
                 else
                     attron(COLOR_PAIR(1)); 
 
-                mvaddch(i + 4, j, ' ' | A_REVERSE);
+                mvaddch(i + 4, j, ACS_CKBOARD);
 
                 attroff(COLOR_PAIR(1));
                 attroff(COLOR_PAIR(2));
