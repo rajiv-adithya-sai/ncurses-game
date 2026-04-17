@@ -7,7 +7,7 @@ void init_display(){
 	cbreak();
 	keypad(stdscr , TRUE);
 	nodelay(stdscr , TRUE);
-	
+	curs_set(0);	
 	start_color();
 }
 
@@ -24,7 +24,7 @@ void refresh_screen(){
 }
 
 void clear_screen(){
-	clear();
+	erase();
 }
 
 void delay(int ms){

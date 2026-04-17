@@ -38,19 +38,19 @@ void init_frame(){
     return rand()%(1 << Cols);
 }*/
 
-unsigned long long generate_k_bits(int n, int k) {
-    if (k == 0) return 0;
+unsigned long long generate_k_bits(int n, int k, int l) {
+    if (k <= 0) return 0;
     if (k == n) return (1 << n) - 1;
 
-    if (rand() % n < k)
-        return (1 << (n - 1)) | generate_k_bits(n - 1, k - 1);
+    if (rand() % (n/l) < (k)+1)
+        return ((1 << l)-1)<<(n-l) | generate_k_bits(n - l - 1, k - l ,l);
     else
-        return generate_k_bits(n - 1, k);
+        return generate_k_bits(n - 1, k ,l);
 }
 
 unsigned long long random_no() {
-	int bullets = rand()%((Cols)/2);
-	return generate_k_bits(Cols , bullets+(Cols/4));
+	int bullets = rand()%((Cols)/6);
+	return generate_k_bits(Cols , bullets+(Cols/8) , 2);
 }
 
 void generate_bullet(){
@@ -83,8 +83,8 @@ void push_down(){
 }
 
 void player_posn(char c){
-	if(c=='d') player_col = (player_col+1)%Cols;
-	else if (c== 'a') player_col = (player_col-1+Cols)%Cols;
+	if(c == 'd') player_col = (player_col+1)%Cols;
+	else if (c == 'a') player_col = (player_col-1+Cols)%Cols;
 	else return;
 }
 
@@ -93,12 +93,12 @@ int get_player_col(){
 }
 
 int check_collision(){
-    return (frame[Rows][player_col-1] == bullet /*|| frame[Rows][player_col+1] == '_'*/);
+    return (frame[Rows][player_col+1] == bullet /*|| frame[Rows][player_col+1] == '_'*/);
 }
 
 void check_near_miss(){
-	if(player_col  <Cols && frame[Rows-2][player_col] == bullet) near_miss++;
-       	if(player_col - 1 > 0 && frame[Rows-2][player_col-2] == bullet) near_miss++;
+	if(player_col  <Cols && frame[Rows-2][player_col+2] == bullet) near_miss++;
+       	if(player_col - 1 > 0 && frame[Rows-2][player_col] == bullet) near_miss++;
 }
 
 int get_near(){
@@ -114,16 +114,16 @@ void draw() {
 
     for (int i = 0; i < Rows + 2; i++) {
         for (int j = 0; j < Cols + 2; j++) {
-            if (i == Rows && j == player_col - 1) {
-                if (time % 4 == 0)
+            if (i == Rows && j == player_col +1) {
+                if (time%20 <= 9 )
                     attron(COLOR_PAIR(2)); 
                 else
                     attron(COLOR_PAIR(1)); 
 
                 mvaddch(i + 4, j, ACS_CKBOARD);
 
-                attroff(COLOR_PAIR(1));
-                attroff(COLOR_PAIR(2));
+                if(time%20 <=9) attroff(COLOR_PAIR(1));
+		else attroff(COLOR_PAIR(2));
             }
 	    else {
 	    	mvaddch(i+4 , j , frame[i][j]);
@@ -133,14 +133,3 @@ void draw() {
     time++; 
 }
 
-/*void draw(){
-    for(int i=0;i<Rows+2;i++){
-        for(int j=0;j<Cols+2;j++){
-            if(i==Rows && j==player_col+1)
-                printf("P");
-            else
-                printf("%c", frame[i][j]);
-        }
-        printf("\n");
-    }
-}*/

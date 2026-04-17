@@ -20,6 +20,7 @@ display.o: source/display.c dir/display.h
 
 savedata.o: source/savedata.c dir/savedata.h
 	gcc -c source/savedata.c -Idir
+
 opening.o: source/opening.c dir/opening.h
 	gcc -c source/opening.c -Idir
 

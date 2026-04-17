@@ -28,7 +28,7 @@ void init_title(){
 
 int option_select(){
 	int ch = getch();
-	if((ch == KEY_DOWN || ch == 's') && point_row<10){
+	if((ch == KEY_DOWN || ch == 's') && point_row<9){
 		point_row ++;
 		return 0;
 	}

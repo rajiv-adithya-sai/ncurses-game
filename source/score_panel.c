@@ -3,7 +3,7 @@
 #include "mechanics.h"
 #include<ncurses.h>
 
-#define MAX_NAME 7   // 6 chars + '\0'
+#define MAX_NAME 20   
 
 static char player_name[MAX_NAME];
 static int wave = 0;
@@ -14,7 +14,7 @@ int get_wave_crossed(int wave, int Rows) {
 
 void init_score(char name[]) {
 	strncpy(player_name, name, 6);
-	player_name[6] = '\0';
+	player_name[MAX_NAME-1] = '\0';
 }
 
 void update_wave() {
@@ -22,16 +22,6 @@ void update_wave() {
 }
 
 int get_wave(){return wave;}
-
-/*void check_near_miss(char frame_row[], int cols) {
-    int player_col = get_player_col();
-    if (player_col - 1 >= 0 && frame_row[player_col] == '#')
-        near_miss++;
-
-    if (player_col + 1 < cols && frame_row[player_col + 2] == '#')
-        near_miss++;
-}*/
-
 
 int get_score() {
 	int rows = get_Rows();
