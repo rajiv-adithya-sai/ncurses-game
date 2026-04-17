@@ -55,7 +55,7 @@ int main(){
 				mvprintw(10,20,"Press Q to quit");
 				mvprintw(11,20,"Press R to return to main");
 				int ch = getch();
-				if (ch == 'q' || ch == 'Q') {next = 1;break;}
+				if (ch == 'q' || ch == 'Q') {next = 1;stop = 1;break;}
 				if (ch == 'r' || ch == 'R') break;
 				napms(100);
 			}
