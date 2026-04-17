@@ -1,6 +1,8 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
+#include<ncurses.h>
+
 #define MAX_NAME 20
 struct save{
     	char name[MAX_NAME];
@@ -137,7 +139,7 @@ void leaderboard(){
 			name[i] = ' ';
 		}
 		name[MAX_NAME - 1] = '\0';
-                printf("%d. %s%d %d\n",rank , name , temp->score , temp->max_wave);
+                mvprintw(rank , 1 ,"%d. %s%d %d\n",rank , name , temp->score , temp->max_wave);
                 rank++;
                 temp = temp->next;
         }

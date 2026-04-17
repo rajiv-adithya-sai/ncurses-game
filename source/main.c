@@ -16,6 +16,7 @@ int main(){
 	srand(time(0));
 	int stop = 0;
 	int lb = 0;
+	int next = 0;
 
 	char name[MAX_NAME];
 	srand(time(0));
@@ -25,22 +26,40 @@ int main(){
 	init_display();
 	get_data();
 	init_title();
-	while(1){
-		int x = option_select();
-		draw_title();
-		if(x == 7){
-			break;
+	while(!next){
+		refresh();
+		erase();
+		while(1){
+			int x = option_select();
+			draw_title();
+			if(x == 7){
+				next = 1;
+				break;
+			}
+			else if(x == 8){
+				lb = 1;
+				break;
+			}
+			else if(x == 9){
+				stop = 1;
+				next = 1;
+				break;	
+			}
+			napms(100);
 		}
-		else if(x == 8){
-			stop = 1;
-			lb = 1;
-			break;
+		if(lb == 1){
+			while(1){
+				refresh();
+				erase();
+				leaderboard();
+				mvprintw(10,20,"Press Q to quit");
+				mvprintw(11,20,"Press R to return to main");
+				int ch = getch();
+				if (ch == 'q' || ch == 'Q') {next = 1;break;}
+				if (ch == 'r' || ch == 'R') break;
+				napms(100);
+			}
 		}
-		else if(x == 9){
-			stop = 1;
-			break;	
-		}
-		napms(300);
 	}
 
 	init_score(name);
@@ -48,8 +67,8 @@ int main(){
 
 	int speed = 250;
 	while(stop == 0){
-		refresh_screen();
-		clear_screen();
+		refresh();
+		erase();
 		int wave = get_wave();
 		push_down();
 
@@ -58,11 +77,11 @@ int main(){
 		update_wave();
 
 		draw();
-		display_score();
+		display_score(space);
 
 		if(check_collision()){
-			int score = get_score();
-			update_data(name,score,wave/3);
+			int score = get_score(space);
+			update_data(name,score,wave/space);
 			put_data();
 			break;
 		}
@@ -74,7 +93,7 @@ int main(){
 			else if (ch == KEY_RIGHT || ch == 'd') player_posn('d');
 			if(ch == 'e') stop = 1;
 			draw();
-			refresh_screen();
+			refresh();
 			napms(10);
 			time+=10;
 		}
@@ -86,13 +105,8 @@ int main(){
 		else if(wave>100 && wave <120) speed = 170;
 		else speed = 150;
 	}
-	
+
 	end_display();
 	
-	if(stop == 0) output_score();
-	if(lb == 1){
-		system("clear");
-		leaderboard();
-	}
-	//system("make clean");
+	if(stop == 0) output_score(space);
 }

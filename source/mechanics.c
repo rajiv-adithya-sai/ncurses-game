@@ -5,7 +5,7 @@
 #include<locale.h>
 
 #define Rows 30
-#define Cols 50
+#define Cols 30
 
 char bullet = '#';
 char frame[Rows+2][Cols+2];
@@ -40,17 +40,17 @@ void init_frame(){
 
 unsigned long long generate_k_bits(int n, int k, int l) {
     if (k <= 0) return 0;
-    if (k == n) return (1 << n) - 1;
+    if (k >= n) return (1 << n) - 1;
 
-    if (rand() % (n/l) < (k)+1)
-        return ((1 << l)-1)<<(n-l) | generate_k_bits(n - l - 1, k - l ,l);
+    if (rand() % (n) < (k)+1)
+        return ((1 << l)-1)<<(n-l-1) | generate_k_bits(n - l - 1, k - l ,l);
     else
         return generate_k_bits(n - 1, k ,l);
 }
 
 unsigned long long random_no() {
-	int bullets = rand()%((Cols)/6);
-	return generate_k_bits(Cols , bullets+(Cols/8) , 2);
+	int bullets = rand()%((Cols)/3);
+	return generate_k_bits(2*Cols , bullets+(Cols/4) , 2);
 }
 
 void generate_bullet(){
@@ -59,6 +59,7 @@ void generate_bullet(){
     for(int i=0;i<Cols;i+=1){
         if(barrage & 1){
 		frame[1][i+1] = bullet ;
+		frame[2][i+1] = bullet ;
 	}
         barrage >>= 1;
     }

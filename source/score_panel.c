@@ -23,14 +23,14 @@ void update_wave() {
 
 int get_wave(){return wave;}
 
-int get_score() {
+int get_score(int space) {
 	int rows = get_Rows();
 	int wave_crossed = get_wave_crossed(wave , rows);
 	int near_miss = get_near();
-    	return (wave_crossed+2)/3 * 100 + near_miss * 75;
+    	return (wave_crossed-1)/space +1 * 100 + near_miss * 75;
 }
 
-void display_score() {
+void display_score(int space) {
     int rows = get_Rows();
     int near_miss = get_near();
     int wave_crossed = get_wave_crossed(get_wave(), rows);
@@ -46,8 +46,7 @@ void display_score() {
     // Score text
     mvprintw(1, start_col,
         "Player: %s | Wave: %d | Score: %d",
-        player_name, wave_crossed, get_score()
-    );
+        player_name, wave_crossed/space, get_score(space));
 
     mvprintw(2, start_col, "Near Miss: %d", near_miss);
 
@@ -57,14 +56,14 @@ void display_score() {
     }
 
  }
-void output_score(){
+void output_score(int space){
 	int rows = get_Rows();
 	int near_miss = get_near();
 	int final_wave = get_wave_crossed(get_wave() , rows);
 
 	for(int i=0;i<50;i++){printf("-");}
 	printf("\n");
-	printf("Player : %s | Wave : %d | Final Score %d\n" , player_name , final_wave/3 , get_score());
+	printf("Player : %s | Wave : %d | Final Score %d\n" , player_name , final_wave/space , get_score(space));
 	for(int i=0;i<50;i++){printf("-");}
 	printf("\n");
 }
