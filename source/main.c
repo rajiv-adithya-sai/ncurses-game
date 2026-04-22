@@ -22,9 +22,9 @@ int main(){
 	srand(time(0));
 	printf("Your Tag :");
 	scanf("%s" , name);
-	
-	init_display();
 	get_data();
+
+	init_display();
 	init_title();
 	while(!next){
 		refresh();

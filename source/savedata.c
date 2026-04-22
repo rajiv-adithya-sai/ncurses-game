@@ -18,17 +18,17 @@ void get_data(){
     if(!fin) return;
 
     char temp[100];
-
-    	while(fscanf(fin , "%[^\n]\n" , temp) != EOF){
+	
+    	while(fgets(temp , 100 , fin) != NULL){
 		struct save* newsafe = malloc(sizeof(struct save));
-
         	char *tok = strtok(temp , ",");
+		if(!tok) continue;
         	strcpy(newsafe->name , tok);
-		if(!tok) continue ;
         	tok = strtok(NULL , ",");
+		if(!tok) continue ;
         	newsafe->score = atoi(tok);
-		if(!tok) continue ;
         	tok = strtok(NULL , ",");
+		if(!tok) continue ;
         	newsafe->max_wave = atoi(tok);
 
         	newsafe->next = NULL;
